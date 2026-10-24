@@ -36,30 +36,38 @@ export default function Toolbar({
           </button>
         </div>
       </div>
-      <div className="row">
-        <label className="lbl" htmlFor="thr">
-          Gap below
-        </label>
-        <input
-          id="thr"
-          type="range"
-          min="10"
-          max="95"
-          step="5"
-          value={threshold}
-          onChange={(e) => setThreshold(Number(e.target.value))}
-        />
-        <span className="val">{threshold}%</span>
-      </div>
-      <div className="row">
-        <label className="check">
-          <input type="checkbox" checked={showUnaddressed} onChange={(e) => setShowUnaddressed(e.target.checked)} />
-          Show risks with no control mapped
-        </label>
-        <button className="btn ghost small" onClick={onResetView} title="Reset camera">
-          ⟲ View
-        </button>
-      </div>
+      <details className="more">
+        <summary>More options</summary>
+        <div className="row">
+          <label className="lbl" htmlFor="thr">
+            Gap below
+          </label>
+          <input
+            id="thr"
+            type="range"
+            min="10"
+            max="95"
+            step="5"
+            value={threshold}
+            onChange={(e) => setThreshold(Number(e.target.value))}
+          />
+          <span className="val">{threshold}%</span>
+        </div>
+        <div className="row">
+          <label className="check">
+            <input
+              id="show-unmapped"
+              type="checkbox"
+              checked={showUnaddressed}
+              onChange={(e) => setShowUnaddressed(e.target.checked)}
+            />
+            Show risks with no control mapped
+          </label>
+          <button className="btn ghost small" onClick={onResetView} title="Reset camera">
+            ⟲ View
+          </button>
+        </div>
+      </details>
     </div>
   );
 }

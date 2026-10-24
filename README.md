@@ -28,6 +28,10 @@ To view it from another computer on your network, `npm run dev` already listens 
 | **Cube color** | Coverage strength: red (0%) → yellow (50%) → green (100%) |
 | **Red wireframe cube** | A risk with **no control mapped** in that environment (it sits on the "∅ No control mapped" row) |
 
+Each axis has its own color (risk is blue, tool is violet, environment is pink), and the same colors appear on the labels, the floor lanes and the **Find a cube** picker.
+
+**Find a cube:** choose a risk, a tool and an environment (for example *MCP discovery × Wiz × Cloud*). That cube is pinned: everything else fades, dashed guide lines run from it to its three axis labels, the labels light up, and a tag above it shows its name and coverage. Clicking a cube does the same.
+
 **Navigation:** drag to rotate. Scroll or pinch to zoom. Right-drag or two-finger drag pans. **⟲ View** resets the camera.
 
 ### Progressive disclosure
@@ -39,7 +43,8 @@ To view it from another computer on your network, `npm run dev` already listens 
 
 ## Modes
 
-- **Demo** loads a deterministic dataset: 10 risks, 11 tools and processes, and 4 environments (Workstation, Citrix, Cloud with AWS/Azure/GCP including management accounts, and Data center). It includes realistic gaps, such as a dev sandbox with no EDR, contractors on Citrix with no DLP, and supply-chain risk unmapped outside the cloud. **Copy to Input** gives you an editable copy.
+- **Demo → Overview** (the default) is a small, high-level picture: 6 risks (including MCP discovery), 6 named products (Wiz, CrowdStrike, Okta, Purview DLP, Splunk, Tenable) and 3 environments (Workstation, Citrix, Cloud).
+- **Demo → Detailed** loads a larger deterministic dataset: 10 risks, 11 tools and processes, and 4 environments (Workstation, Citrix, Cloud with AWS/Azure/GCP including management accounts, and Data center). It includes realistic gaps, such as a dev sandbox with no EDR, contractors on Citrix with no DLP, and supply-chain risk unmapped outside the cloud. **Copy to Input** gives you an editable copy.
 - **Input** is your own data, saved automatically to `localStorage`. **Edit data** has forms for:
   - **Risks**: name, category, magnitude 1–10, description, ordering
   - **Tools & processes**: name, kind, vendor or owner, description

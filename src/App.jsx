@@ -9,7 +9,8 @@ import Breadcrumb from './components/Breadcrumb.jsx';
 import EmptyState from './components/EmptyState.jsx';
 import Editor from './editor/Editor.jsx';
 import ConfirmHost from './components/ConfirmDialog.jsx';
-import { buildDemoDataset } from './data/demo.js';
+import { DEMO_SETS } from './data/demo.js';
+import FindCube from './components/FindCube.jsx';
 import { buildCells, resolveDrill, summarize } from './data/model.js';
 import { loadInputData, loadPrefs, saveInputData, savePrefs } from './data/storage.js';
 
@@ -17,7 +18,8 @@ const prefs0 = loadPrefs();
 const isSmallScreen = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 600px)').matches;
 
 export default function App() {
-  const demoData = useMemo(() => buildDemoDataset(), []);
+  const [demoSet, setDemoSet] = useState(DEMO_SETS[prefs0.demoSet] ? prefs0.demoSet : 'overview');
+  const demoData = useMemo(() => DEMO_SETS[demoSet].build(), [demoSet]);
   const [inputData, setInputData] = useState(() => loadInputData());
   const [mode, setMode] = useState(prefs0.mode === 'input' ? 'input' : 'demo');
   const [view, setView] = useState('visualize');
@@ -35,8 +37,8 @@ export default function App() {
   const data = mode === 'demo' ? demoData : inputData;
 
   useEffect(() => {
-    savePrefs({ mode, metric, threshold, showUnaddressed });
-  }, [mode, metric, threshold, showUnaddressed]);
+    savePrefs({ mode, demoSet, metric, threshold, showUnaddressed });
+  }, [mode, demoSet, metric, threshold, showUnaddressed]);
 
   useEffect(() => {
     setSaveState(saveInputData(inputData) ? 'saved' : 'error');
@@ -60,6 +62,14 @@ export default function App() {
     setSelection(null);
     setHover(null);
     if (m === 'demo') setView('visualize');
+    setFitKey((k) => k + 1);
+  };
+
+  const switchDemoSet = (set) => {
+    setDemoSet(set);
+    setDrill({ envId: null, providerId: null });
+    setSelection(null);
+    setHover(null);
     setFitKey((k) => k + 1);
   };
 
@@ -152,6 +162,15 @@ export default function App() {
             </div>
           )}
           {mode === 'demo' && (
+            <div className="seg" aria-label="Demo dataset">
+              {Object.entries(DEMO_SETS).map(([id, def]) => (
+                <button key={id} className={demoSet === id ? 'on' : ''} onClick={() => switchDemoSet(id)}>
+                  {def.label}
+                </button>
+              ))}
+            </div>
+          )}
+          {mode === 'demo' && (
             <button
               className="btn ghost small hide-sm"
               onClick={loadDemoIntoInput}
@@ -193,6 +212,7 @@ export default function App() {
               />
               <div className="overlay top-left">
                 <Breadcrumb env={drillEnv} provider={drillProvider} zTitle={z.title} onGo={goToLevel} />
+                <FindCube data={data} zAxis={z} selection={selection} setSelection={setSelection} />
                 <KpiBar summary={summary} threshold={threshold} metric={metric} />
                 <button className="btn small controls-toggle" onClick={() => setControlsOpen((o) => !o)}>
                   {controlsOpen ? 'Hide controls ▴' : 'Size, highlight & filters ▾'}
@@ -211,7 +231,7 @@ export default function App() {
                   />
                 )}
               </div>
-              <Legend metric={metric} threshold={threshold} />
+              <Legend metric={metric} threshold={threshold} zTitle={z.title} />
               <DetailPanel
                 data={data}
                 zAxis={z}

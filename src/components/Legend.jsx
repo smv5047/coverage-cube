@@ -1,6 +1,15 @@
-export default function Legend({ metric, threshold }) {
+import { AXIS_COLOR } from './Scene.jsx';
+
+export default function Legend({ metric, threshold, zTitle }) {
   return (
     <div className="overlay bottom-left card legend">
+      <div className="legend-row">
+        <span className="lbl">Each cube is one</span>
+        <div className="axis-key">
+          <span style={{ '--axis': AXIS_COLOR.x }}>Risk</span>×<span style={{ '--axis': AXIS_COLOR.y }}>Tool</span>×
+          <span style={{ '--axis': AXIS_COLOR.z }}>{zTitle}</span>
+        </div>
+      </div>
       <div className="legend-row">
         <span className="lbl">Color · coverage</span>
         <div className="gradient">

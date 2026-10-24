@@ -380,7 +380,104 @@ h4 {
   accent-color: var(--accent);
 }
 
+/* find a cube */
+.find {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.find-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 22px;
+}
+
+.find-head .lbl,
+.toolbar .more summary {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.find-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.find-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.find-axis {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--axis);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.find-field select {
+  width: 100%;
+  background: #0e1530;
+  border: 1px solid var(--line-2);
+  border-left: 3px solid var(--axis);
+  border-radius: 6px;
+  padding: 5px 6px;
+  font-size: 12.5px;
+}
+
+.find-field select:focus {
+  outline: none;
+  border-color: var(--axis);
+}
+
+.find-x {
+  position: absolute;
+  right: -11px;
+  bottom: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.toolbar .more summary {
+  cursor: pointer;
+  user-select: none;
+}
+
+.toolbar .more[open] {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 /* legend */
+.axis-key {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.axis-key span {
+  color: var(--axis);
+  font-weight: 700;
+  border: 1px solid var(--axis);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
 .legend {
   padding: 8px 10px;
   width: 300px;

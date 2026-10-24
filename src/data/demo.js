@@ -524,3 +524,232 @@ export function buildDemoDataset() {
     coverage,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Overview demo: a deliberately small, high-level picture (6 risks × 6 named
+// products × 3 environments) where any single cube is easy to find.
+// ---------------------------------------------------------------------------
+
+const ovRisks = [
+  {
+    id: 'or-mcp',
+    name: 'MCP discovery',
+    category: 'AI',
+    magnitude: 7,
+    description: 'Unknown or unmanaged MCP servers and AI-agent tool integrations.',
+  },
+  {
+    id: 'or-ransom',
+    name: 'Ransomware',
+    category: 'Malware',
+    magnitude: 9,
+    description: 'Encryption/extortion of endpoints and servers.',
+  },
+  {
+    id: 'or-cred',
+    name: 'Credential theft',
+    category: 'Identity',
+    magnitude: 8,
+    description: 'Phishing, token theft and MFA fatigue.',
+  },
+  {
+    id: 'or-exfil',
+    name: 'Data exfiltration',
+    category: 'Data',
+    magnitude: 8,
+    description: 'Sensitive data leaving the organization.',
+  },
+  {
+    id: 'or-misconfig',
+    name: 'Misconfiguration',
+    category: 'Configuration',
+    magnitude: 7,
+    description: 'Insecure settings, public exposure, drift.',
+  },
+  {
+    id: 'or-vuln',
+    name: 'Unpatched vulns',
+    category: 'Vulnerability',
+    magnitude: 7,
+    description: 'Known exploitable vulnerabilities left open.',
+  },
+];
+
+const ovTools = [
+  {
+    id: 'ot-wiz',
+    name: 'Wiz',
+    kind: 'tool',
+    vendor: 'Wiz',
+    description: 'Cloud security posture, AI-SPM and workload scanning.',
+  },
+  {
+    id: 'ot-cs',
+    name: 'CrowdStrike',
+    kind: 'tool',
+    vendor: 'CrowdStrike Falcon',
+    description: 'Endpoint detection & response.',
+  },
+  { id: 'ot-okta', name: 'Okta', kind: 'tool', vendor: 'Okta', description: 'SSO and phishing-resistant MFA.' },
+  { id: 'ot-purview', name: 'Purview DLP', kind: 'tool', vendor: 'Microsoft', description: 'Data loss prevention.' },
+  {
+    id: 'ot-splunk',
+    name: 'Splunk',
+    kind: 'tool',
+    vendor: 'Splunk ES',
+    description: 'SIEM: logging, correlation, alerting.',
+  },
+  {
+    id: 'ot-tenable',
+    name: 'Tenable',
+    kind: 'tool',
+    vendor: 'Tenable',
+    description: 'Vulnerability and configuration scanning.',
+  },
+];
+
+const ovEnvironments = [
+  {
+    id: 'oe-ws',
+    name: 'Workstation',
+    providerLabel: 'Platform',
+    accountLabel: 'Device group',
+    providers: [
+      {
+        id: 'op-win',
+        name: 'Windows',
+        accounts: [
+          { id: 'oa-win', name: 'Corporate laptops', type: 'account', owner: 'EUC', region: 'Global', assets: 9800 },
+        ],
+      },
+      {
+        id: 'op-mac',
+        name: 'macOS',
+        accounts: [{ id: 'oa-mac', name: 'Mac fleet', type: 'account', owner: 'EUC', region: 'Global', assets: 1400 }],
+      },
+    ],
+  },
+  {
+    id: 'oe-citrix',
+    name: 'Citrix',
+    providerLabel: 'Delivery platform',
+    accountLabel: 'Delivery group',
+    providers: [
+      {
+        id: 'op-daas',
+        name: 'Citrix DaaS',
+        accounts: [
+          { id: 'oa-cc', name: 'Contact center', type: 'account', owner: 'CX Ops', region: 'NA', assets: 1800 },
+        ],
+      },
+      {
+        id: 'op-cvad',
+        name: 'On-prem CVAD',
+        accounts: [
+          { id: 'oa-fin', name: 'Finance apps', type: 'account', owner: 'Finance IT', region: 'NA', assets: 420 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'oe-cloud',
+    name: 'Cloud',
+    providerLabel: 'Cloud service provider',
+    accountLabel: 'Account / subscription',
+    providers: [
+      {
+        id: 'op-aws',
+        name: 'AWS',
+        accounts: [
+          {
+            id: 'oa-aws-mgmt',
+            name: 'aws-org-management',
+            type: 'management',
+            owner: 'Cloud Platform',
+            region: 'us-east-1',
+            assets: 140,
+          },
+          {
+            id: 'oa-aws-prod',
+            name: 'prod-workloads',
+            type: 'account',
+            owner: 'Engineering',
+            region: 'us-east-1',
+            assets: 3200,
+          },
+        ],
+      },
+      {
+        id: 'op-azure',
+        name: 'Azure',
+        accounts: [
+          { id: 'oa-az-prod', name: 'sub-prod', type: 'account', owner: 'App Team', region: 'eastus', assets: 980 },
+        ],
+      },
+      {
+        id: 'op-gcp',
+        name: 'GCP',
+        accounts: [
+          {
+            id: 'oa-gcp-ml',
+            name: 'proj-ml-platform',
+            type: 'account',
+            owner: 'ML Eng',
+            region: 'us-central1',
+            assets: 1240,
+          },
+        ],
+      },
+    ],
+  },
+];
+
+// Environment-level coverage % per risk × tool: [Workstation, Citrix, Cloud];
+// null = that tool doesn't apply there, 0 = applies but not deployed.
+const ovCoverage = {
+  'or-mcp': { 'ot-wiz': [null, null, 72], 'ot-cs': [48, 22, null], 'ot-splunk': [20, null, 35] },
+  'or-ransom': { 'ot-cs': [92, 74, 58], 'ot-splunk': [70, 55, 62], 'ot-tenable': [60, 40, 55] },
+  'or-cred': { 'ot-okta': [90, 68, 84], 'ot-cs': [65, 50, null], 'ot-splunk': [55, 40, 60] },
+  'or-exfil': { 'ot-purview': [74, 0, 40], 'ot-splunk': [50, 35, 52], 'ot-wiz': [null, null, 45] },
+  'or-misconfig': { 'ot-wiz': [null, null, 88], 'ot-tenable': [52, 38, 47] },
+  'or-vuln': { 'ot-tenable': [85, 48, 66], 'ot-wiz': [null, null, 80], 'ot-cs': [40, 30, null] },
+};
+
+export function buildOverviewDataset() {
+  const rand = mulberry32(6);
+  const coverage = {};
+  ovEnvironments.forEach((env, ei) => {
+    for (const prov of env.providers) {
+      for (const acct of prov.accounts) {
+        for (const risk of ovRisks) {
+          for (const [toolId, perEnv] of Object.entries(ovCoverage[risk.id])) {
+            const base = perEnv[ei];
+            if (base == null) continue;
+            const cov = base === 0 ? 0 : Math.round(clamp(base + (rand() - 0.5) * 16, 1, 100));
+            coverage[cellKey(risk.id, toolId, acct.id)] = {
+              coverage: cov,
+              assets: Math.max(1, Math.round(acct.assets * (0.6 + rand() * 0.4))),
+              magnitude:
+                Math.round(
+                  clamp(risk.magnitude + (acct.type === 'management' ? 1.5 : 0) + (rand() - 0.5), 1, 10) * 10,
+                ) / 10,
+              notes: cov === 0 ? 'Control not deployed in this scope.' : '',
+            };
+          }
+        }
+      }
+    }
+  });
+  return {
+    version: SCHEMA_VERSION,
+    risks: structuredClone(ovRisks),
+    tools: structuredClone(ovTools),
+    environments: structuredClone(ovEnvironments),
+    coverage,
+  };
+}
+
+export const DEMO_SETS = {
+  overview: { label: 'Overview', build: buildOverviewDataset },
+  detailed: { label: 'Detailed', build: buildDemoDataset },
+};
