@@ -8,6 +8,8 @@
 //                    providers: [{ id, name,
 //                      accounts: [{ id, name, type: 'account' | 'management', owner, region, assets }] }] }]
 //   coverage:     { "riskId|toolId|accountId": { coverage (0-100), assets, magnitude (1-10), notes } }
+//   meta:         { title }                      (optional) report title shown on the summary
+//   snapshots:    [{ id, date, label, ... }]     (optional) saved summary metrics for trend tracking
 // }
 //
 // Coverage is always recorded at the leaf (account) level. Every higher level
@@ -31,7 +33,28 @@ export function uid(prefix = 'id') {
 }
 
 export function emptyDataset() {
-  return { version: SCHEMA_VERSION, risks: [], tools: [], environments: [], coverage: {} };
+  return {
+    version: SCHEMA_VERSION,
+    risks: [],
+    tools: [],
+    environments: [],
+    coverage: {},
+    meta: { title: '' },
+    snapshots: [],
+  };
+}
+
+// Default names for the two drill levels below a well-known environment.
+export const ENV_LABEL_PRESETS = {
+  Workstation: ['Platform', 'Device group'],
+  Citrix: ['Delivery platform', 'Delivery group'],
+  Cloud: ['Cloud service provider', 'Account / subscription'],
+  'Data center': ['Site / platform', 'Cluster'],
+};
+
+export function envLabelsFor(name) {
+  const hit = Object.keys(ENV_LABEL_PRESETS).find((k) => k.toLowerCase() === String(name).trim().toLowerCase());
+  return hit ? ENV_LABEL_PRESETS[hit] : ['Provider', 'Account'];
 }
 
 export const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));

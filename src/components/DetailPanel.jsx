@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { NumInput } from '../editor/fields.jsx';
 import {
   STATUS_LABEL,
   accountIndex,
@@ -131,6 +132,7 @@ export default function DetailPanel({
   startCollapsed = false,
   mode,
   onEdit,
+  onTweak,
 }) {
   const [collapsed, setCollapsed] = useState(startCollapsed);
   const accounts = useMemo(() => accountIndex(data), [data]);
@@ -277,6 +279,39 @@ export default function DetailPanel({
           </>
         ) : (
           <p className="muted small">This control is not mapped to this risk here.</p>
+        )}
+
+        {isAccount && rec && mode === 'input' && onTweak && (
+          <div className="tweak">
+            <h4>Adjust this value</h4>
+            <div className="tweak-row">
+              <label htmlFor="tweak-cov">Coverage %</label>
+              <NumInput
+                id="tweak-cov"
+                value={rec.coverage}
+                min={0}
+                max={100}
+                step={5}
+                onCommit={(v) => onTweak(cellKey(risk.id, tool.id, zItem.id), { coverage: v })}
+              />
+              <label htmlFor="tweak-assets">Assets</label>
+              <NumInput
+                id="tweak-assets"
+                value={rec.assets}
+                min={0}
+                onCommit={(v) => onTweak(cellKey(risk.id, tool.id, zItem.id), { assets: v })}
+              />
+            </div>
+            <input
+              id="tweak-notes"
+              type="text"
+              className="tweak-notes"
+              placeholder="Notes, e.g. rollout due in Q1"
+              aria-label="Notes"
+              value={rec.notes || ''}
+              onChange={(e) => onTweak(cellKey(risk.id, tool.id, zItem.id), { notes: e.target.value })}
+            />
+          </div>
         )}
 
         {isAccount && acct && (

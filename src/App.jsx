@@ -11,6 +11,8 @@ import Editor from './editor/Editor.jsx';
 import ConfirmHost from './components/ConfirmDialog.jsx';
 import { DEMO_SETS } from './data/demo.js';
 import FindCube from './components/FindCube.jsx';
+import Brief from './components/Brief.jsx';
+import { askConfirm } from './components/ConfirmDialog.jsx';
 import { buildCells, resolveDrill, summarize } from './data/model.js';
 import { loadInputData, loadPrefs, saveInputData, savePrefs } from './data/storage.js';
 
@@ -22,7 +24,8 @@ export default function App() {
   const demoData = useMemo(() => DEMO_SETS[demoSet].build(), [demoSet]);
   const [inputData, setInputData] = useState(() => loadInputData());
   const [mode, setMode] = useState(prefs0.mode === 'input' ? 'input' : 'demo');
-  const [view, setView] = useState('visualize');
+  const [view, setView] = useState(prefs0.view === 'cube' ? 'cube' : 'brief'); // 'brief' | 'cube' | 'edit'
+  const [editTab, setEditTab] = useState(null);
   const [metric, setMetric] = useState(prefs0.metric === 'magnitude' ? 'magnitude' : 'assets');
   const [filter, setFilter] = useState('all');
   const [threshold, setThreshold] = useState(Number(prefs0.threshold) || 60);
@@ -37,8 +40,8 @@ export default function App() {
   const data = mode === 'demo' ? demoData : inputData;
 
   useEffect(() => {
-    savePrefs({ mode, demoSet, metric, threshold, showUnaddressed });
-  }, [mode, demoSet, metric, threshold, showUnaddressed]);
+    savePrefs({ mode, demoSet, metric, threshold, showUnaddressed, view: view === 'cube' ? 'cube' : 'brief' });
+  }, [mode, demoSet, metric, threshold, showUnaddressed, view]);
 
   useEffect(() => {
     setSaveState(saveInputData(inputData) ? 'saved' : 'error');
@@ -61,7 +64,7 @@ export default function App() {
     setDrill({ envId: null, providerId: null });
     setSelection(null);
     setHover(null);
-    if (m === 'demo') setView('visualize');
+    if (m === 'demo' && view === 'edit') setView('brief');
     setFitKey((k) => k + 1);
   };
 
@@ -116,16 +119,41 @@ export default function App() {
     }
   };
 
-  const loadDemoIntoInput = () => {
-    setInputData(structuredClone(demoData));
+  const loadDemoIntoInput = async () => {
+    const hasOwn = inputData.risks.length + inputData.tools.length + inputData.environments.length > 0;
+    if (hasOwn && !(await askConfirm('Replace your own data with this demo dataset?', { confirmLabel: 'Replace' }))) {
+      return;
+    }
+    setInputData({ ...structuredClone(demoData), meta: inputData.meta || { title: '' }, snapshots: [] });
     setMode('input');
     setDrill({ envId: null, providerId: null });
     setSelection(null);
     setFitKey((k) => k + 1);
   };
 
+  const openEditor = (tab = null) => {
+    setEditTab(tab);
+    setView('edit');
+  };
+
+  // Jump from the summary to one cube at environment level.
+  const openInCube = (riskId, toolId, envId) => {
+    setDrill({ envId: null, providerId: null });
+    setSelection({ riskId, toolId, zId: envId });
+    setFilter('all');
+    setFitKey((k) => k + 1);
+    setView('cube');
+  };
+
+  // Quick edits made from the cube's detail panel.
+  const tweakRecord = (key, patch) =>
+    setInputData((d) =>
+      d.coverage[key] ? { ...d, coverage: { ...d.coverage, [key]: { ...d.coverage[key], ...patch } } } : d,
+    );
+
   const isEmpty = !data.risks.length || !data.tools.length || !data.environments.length;
   const showEditor = mode === 'input' && view === 'edit';
+  const showBrief = view === 'brief';
 
   return (
     <div className="app">
@@ -143,24 +171,27 @@ export default function App() {
           </div>
         </div>
         <div className="topbar-actions">
-          <div className="seg" role="tablist" aria-label="Mode">
+          <div className="seg" role="tablist" aria-label="Data source">
             <button className={mode === 'demo' ? 'on' : ''} onClick={() => switchMode('demo')}>
               Demo
             </button>
             <button className={mode === 'input' ? 'on' : ''} onClick={() => switchMode('input')}>
-              Input
+              My data
             </button>
           </div>
-          {mode === 'input' && (
-            <div className="seg" aria-label="View">
-              <button className={view === 'visualize' ? 'on' : ''} onClick={() => setView('visualize')}>
-                Visualize
-              </button>
-              <button className={view === 'edit' ? 'on' : ''} onClick={() => setView('edit')}>
+          <div className="seg" role="tablist" aria-label="View">
+            <button className={view === 'brief' ? 'on' : ''} onClick={() => setView('brief')}>
+              Summary
+            </button>
+            <button className={view === 'cube' ? 'on' : ''} onClick={() => setView('cube')}>
+              Cube
+            </button>
+            {mode === 'input' && (
+              <button className={view === 'edit' ? 'on' : ''} onClick={() => openEditor()}>
                 Edit data
               </button>
-            </div>
-          )}
+            )}
+          </div>
           {mode === 'demo' && (
             <div className="seg" aria-label="Demo dataset">
               {Object.entries(DEMO_SETS).map(([id, def]) => (
@@ -174,26 +205,52 @@ export default function App() {
             <button
               className="btn ghost small hide-sm"
               onClick={loadDemoIntoInput}
-              title="Copy demo data into Input mode to edit it"
+              title="Copy this demo into My data so you can edit it"
             >
-              Copy to Input
+              Use as my data
             </button>
           )}
           {mode === 'input' && (
-            <span className={`save-pill ${saveState}`} title="Input-mode data persists to this browser's local storage">
-              {saveState === 'saved' ? 'Saved locally' : 'Save failed'}
+            <span className={`save-pill ${saveState}`} title="Your data is saved in this browser's local storage">
+              {saveState === 'saved' ? 'Saved in this browser' : 'Save failed'}
             </span>
           )}
         </div>
       </header>
 
       {showEditor ? (
-        <Editor data={inputData} setData={setInputData} demoData={demoData} onDone={() => setView('visualize')} />
+        <Editor
+          key={editTab || 'default'}
+          data={inputData}
+          setData={setInputData}
+          demoData={demoData}
+          initialTab={editTab}
+          onDone={() => setView('brief')}
+        />
+      ) : isEmpty ? (
+        <main className="stage">
+          <EmptyState
+            onImport={() => openEditor('data')}
+            onEdit={() => openEditor('risks')}
+            onLoadDemo={loadDemoIntoInput}
+          />
+        </main>
+      ) : showBrief ? (
+        <Brief
+          data={data}
+          threshold={threshold}
+          editable={mode === 'input'}
+          sample={mode === 'demo'}
+          onTitle={(title) => setInputData((d) => ({ ...d, meta: { ...(d.meta || {}), title } }))}
+          onSaveSnapshot={(snap) => setInputData((d) => ({ ...d, snapshots: [...(d.snapshots || []), snap] }))}
+          onDeleteSnapshot={(id) =>
+            setInputData((d) => ({ ...d, snapshots: (d.snapshots || []).filter((x) => x.id !== id) }))
+          }
+          onOpenCube={openInCube}
+        />
       ) : (
         <main className="stage">
-          {isEmpty ? (
-            <EmptyState data={data} onEdit={() => setView('edit')} onLoadDemo={loadDemoIntoInput} />
-          ) : (
+          {
             <>
               <Scene
                 data={data}
@@ -244,11 +301,12 @@ export default function App() {
                 drillInto={drillInto}
                 startCollapsed={isSmallScreen()}
                 mode={mode}
-                onEdit={() => setView('edit')}
+                onEdit={() => openEditor('coverage')}
+                onTweak={tweakRecord}
               />
               {hover && <Tooltip hover={hover} threshold={threshold} />}
             </>
-          )}
+          }
         </main>
       )}
       <ConfirmHost />

@@ -1,22 +1,21 @@
-export default function EmptyState({ data, onEdit, onLoadDemo }) {
-  const missing = [];
-  if (!data.risks.length) missing.push('risks');
-  if (!data.tools.length) missing.push('tools or processes');
-  if (!data.environments.length) missing.push('environments');
+export default function EmptyState({ onImport, onEdit, onLoadDemo }) {
   return (
     <div className="empty">
       <div className="card empty-card">
-        <h2>Your coverage cube is empty</h2>
+        <h2>Add your coverage data</h2>
         <p>
-          Input mode stores your own data in this browser. To render the cube, add at least one of each:{' '}
-          {missing.join(', ')}— then set coverage per account in the coverage matrix.
+          Nothing here yet. The quickest route is a spreadsheet: download the template, fill one row per risk, tool and
+          environment, and import it. You can then adjust any value in the app. Your data stays in this browser.
         </p>
         <div className="empty-actions">
-          <button className="btn primary" onClick={onEdit}>
-            Start adding data
+          <button className="btn primary" onClick={onImport}>
+            Import a spreadsheet
           </button>
           <button className="btn" onClick={onLoadDemo}>
-            Start from demo data
+            Start from the demo
+          </button>
+          <button className="btn ghost" onClick={onEdit}>
+            Enter it by hand
           </button>
         </div>
       </div>

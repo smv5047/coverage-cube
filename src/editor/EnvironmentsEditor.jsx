@@ -1,13 +1,8 @@
 import { useState } from 'react';
-import { uid } from '../data/model.js';
+import { ENV_LABEL_PRESETS, uid } from '../data/model.js';
 import { NumInput, TextInput, confirmDelete } from './fields.jsx';
 
-const PRESETS = {
-  Workstation: ['Platform', 'Device group'],
-  Citrix: ['Delivery platform', 'Delivery group'],
-  Cloud: ['Cloud service provider', 'Account / subscription'],
-  'Data center': ['Site / platform', 'Cluster'],
-};
+const PRESETS = ENV_LABEL_PRESETS;
 
 export default function EnvironmentsEditor({ data, update }) {
   const [name, setName] = useState('');
